@@ -73,53 +73,80 @@ RSpec.describe V1::TasksController, type: :controller do
 
   describe 'POST projects/:id/tasks' do
     it 'returns a 200' do
+      task = create(:task)
+      Task.any_instance.stub(:persisted?).and_return(true)
+
       project = double('project')
       Project.stub(:find_by).and_return(project)
       allow(project).to receive(:tasks)
-      allow(project.tasks).to receive(:<<)
+      allow(project.tasks).to receive(:create).and_return(task)
+
 
       @controller.stub(:task_params)
-
-      task = create(:task)
-      Task.stub(:new).and_return(task)
-      Task.any_instance.stub(:save).and_return(true)
 
       post :create, project_id: 1
 
       expect(response).to have_http_status(200)
     end
 
-    it 'returns a 404 if project does not exist' do
-      Project.stub(:find_by).and_return(nil)
+    it 'returns a 400 if project does not exist' do
+      task = create(:task)
+      Task.any_instance.stub(:persisted?).and_return(false)
+
+      project = double('project')
+      Project.stub(:find_by).and_return(project)
+      allow(project).to receive(:tasks)
+      allow(project.tasks).to receive(:create).and_return(task)
+
       @controller.stub(:task_params)
-      Task.stub(:new)
-      Task.any_instance.stub(:save).and_return(true)
 
       post :create, project_id: 1
 
-      expect(response).to have_http_status(404)
+      expect(response).to have_http_status(400)
     end
 
-    it 'returns a 422 if task data is invalid' do
-      Project.stub(:find_by).and_return('a project that exists')
+    it 'returns a 400 if task data is invalid' do
+      task = double('task')
+      project = double('project')
+      Project.stub(:find_by).and_return(project)
+
+      allow(project).to receive(:tasks)
+      allow(project.tasks).to receive(:create).and_return(task)
+      allow(task).to receive(:persisted?).and_return(false)
+
       @controller.stub(:task_params)
-      task = create(:task)
-      Task.stub(:new).and_return(task)
-      Task.any_instance.stub(:save).and_return(false)
 
       post :create, project_id: 1
 
-      expect(response).to have_http_status(422)
+      expect(response).to have_http_status(400)
     end
 
     it 'project is found with an id' do
+      task = double('task')
+      project = double('project')
+      Project.stub(:find_by).and_return(project)
+
+      allow(project).to receive(:tasks)
+      allow(project.tasks).to receive(:create).and_return(task)
+      allow(task).to receive(:persisted?).and_return(true)
+
       @controller.stub(:task_params)
+
       expect(Project).to receive(:find_by).with(id: "1")
+
       post :create, project_id: 1
     end
 
     it 'task is built with params' do
-      expect(Task).to receive(:new).with(name: "grocery shopping", description: "whole paycheck")
+      task = double('task')
+      project = double('project')
+      Project.stub(:find_by).and_return(project)
+
+      allow(project).to receive(:tasks)
+      allow(project.tasks).to receive(:create).and_return(task)
+      allow(task).to receive(:persisted?).and_return(true)
+
+      expect(project.tasks).to receive(:create).with(name: "grocery shopping", description: "whole paycheck")
       post :create, project_id: 1, task: { name: "grocery shopping", description: "whole paycheck" }
     end
   end

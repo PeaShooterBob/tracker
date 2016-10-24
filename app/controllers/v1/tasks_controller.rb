@@ -20,15 +20,12 @@ module V1
 
     def create
       @project = Project.find_by(id: params[:project_id])
-      @task = Task.new(task_params)
+      @task = @project.tasks.create(task_params)
 
-      if @project.nil?
-        head(404)
-      elsif !@task.save
-        head(422)
-      else
-        @project.tasks << @task
+      if @task.persisted?
         render json: @task
+      else
+        head(400)
       end
     end
 
