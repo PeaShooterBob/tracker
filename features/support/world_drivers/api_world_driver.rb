@@ -29,4 +29,9 @@ class ApiWorldDriver < WorldDriver
     end
   end
 
+  def create_task attributes
+    result = post "/v1/projects/#{attributes[:project_id]}/tasks", { task: attributes }
+    body = JSON.parse(result.body).deep_symbolize_keys
+  end
+
 end

@@ -27,6 +27,7 @@ group :development, :test do
   gem 'shoulda'
   gem 'simplecov'
   gem 'simplecov-html'
+  gem 'pry'
 end
 
 group :test do
